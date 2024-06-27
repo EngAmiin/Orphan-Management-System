@@ -1,0 +1,72 @@
+      
+        function count() {
+            $.ajax({
+                method: "POST",
+                dataType: "JSON",
+                data: {
+                    action: "count",
+                },
+                url: "../api/admin.php",
+                success: (res) => {
+                    console.log(res.data);
+                    google.charts.load('current', { 'packages': ['corechart'] });
+                    google.charts.setOnLoadCallback(() => drawChart(res.data)); // Pass the response data to drawChart
+                },
+                error: (err) => {
+                    console.log(err);
+                },
+            });
+        }
+
+        function drawChart(data) {
+            // Convert the received data to a format suitable for Google Charts
+            var chartData = [['Most', 'Requestedcompany']];
+            data.forEach(item => {
+                chartData.push([item.ind_name, parseInt(item.request_count)]);
+            });
+
+            // Create a DataTable from the data
+            var dataTable = google.visualization.arrayToDataTable(chartData);
+
+            var options = {
+                title: 'Companies Request Count'
+            };
+
+            var chart = new google.visualization.PieChart(document.getElementById('piechart'));
+
+            chart.draw(dataTable, options);
+        }
+        count()
+            ;
+
+        google.charts.load("current", { packages: ['corechart'] });
+        google.charts.setOnLoadCallback(drawChart);
+        function drawChart() {
+            var data = google.visualization.arrayToDataTable([
+                ["Element", "Density", { role: "style" }],
+                ["Copper", 8.94, "blue"],
+                ["Silver", 10.49, "blue"],
+                ["Gold", 19.30, "blue"],
+                ["Platinum", 21.45, "color: blue"]
+            ]);
+
+            var view = new google.visualization.DataView(data);
+            view.setColumns([0, 1,
+                {
+                    calc: "stringify",
+                    sourceColumn: 1,
+                    type: "string",
+                    role: "annotation"
+                },
+                2]);
+
+            var options = {
+                title: "Density of Precious Metals, in g/cm^3",
+                width: 600,
+                height: 400,
+                bar: { groupWidth: "95%" },
+                legend: { position: "none" },
+            };
+            var chart = new google.visualization.ColumnChart(document.getElementById("columnchart_values"));
+            chart.draw(view, options);
+        }
