@@ -186,6 +186,80 @@ include '../application/config/conn.db.php'
   padding: 10px 15px;
   cursor: pointer;
   color: white;
+
+  /* Custom Styles for Donation Form */
+.form-section {
+    background-color: #f9f9f9;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.ui.radio.checkbox {
+    display: block;
+    margin-top: 10px;
+}
+
+.ui.form .field label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: #333;
+}
+
+.program-description {
+    margin-left: 25px;
+    font-size: 0.9em;
+    color: #666;
+    line-height: 1.4;
+}
+
+/* Styling for headers inside the form */
+.ui.dividing.header {
+    color: #0056b3; /* Dark blue to match logo color perhaps */
+    border-bottom: 2px solid #ccc;
+    padding-bottom: 10px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+
+/* Styling for the entire form section */
+.form-section {
+    background-color: #f9f9f9;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+/* Styling specifically for radio buttons and labels */
+.ui.radio.checkbox {
+    display: flex;
+    align-items: center; /* Aligns the radio button and label text vertically */
+    margin-top: 10px;
+}
+
+/* Label styling to improve readability and appearance */
+.ui.radio.checkbox label {
+    margin-left: 8px; /* Adjust this as needed for alignment */
+    font-size: 16px; /* Set the font size for labels */
+    color: #333; /* Dark gray for text color */
+}
+
+/* Header styling within the form for a consistent look */
+.ui.dividing.header {
+    color: #0056b3; /* Use a blue color to highlight the section headers */
+    border-bottom: 2px solid #ccc;
+    padding-bottom: 10px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+
+
+
 }
 
     </style>
@@ -227,47 +301,48 @@ include '../application/config/conn.db.php'
 
                 ?>
 
+
+                    <?php
+                    include '../application/config/conn.db.php'; 
+
+                    $programs = []; 
+                    try {
+                        
+                        $query = "SELECT `program_id`, `program_title` FROM programs "; 
+                        $result = $conn->query($query);
+                        if ($result->num_rows > 0) {
+                            while ($row = $result->fetch_assoc()) {
+                                $programs[] = $row; 
+                            }
+                        }
+                        $conn->close(); 
+                    } catch (Exception $e) {
+                        echo 'Caught exception: ',  $e->getMessage(), "\n";
+                    }
+                    ?>
+
+
+
+
                 <form action="<?php $_PHP_SELF ?>" method="post" class="ui form">
 
                     <h4 class="ui dividing header">Select the program to sponsor</h4>
                     <div class="grouped fields">
-                        <label for="program">Programs: </label>
-                        <div class="field">
-                          <div class="ui radio checkbox">
-                            <input type="radio" name="program" tabindex="0" class="hidden" id="aakar" value="Aakar">
-                            <label for="aakar">AAKAR - the first step</label>
+                        <h4 for="program">Programs: </h4>
+
+                        <?php foreach ($programs as $program): ?>
+                          <div class="field">
+                              <div class="ui radio checkbox">
+                                  <input type="radio" name="program" id="program-<?php echo htmlspecialchars($program['program_id']); ?>" value="<?php echo htmlspecialchars($program['program_id']); ?>">
+                                  <label for="program-<?php echo htmlspecialchars($program['program_id']); ?>">
+                                      <strong><?php echo htmlspecialchars($program['program_title']); ?></strong>
+                                      <br>
+                                      
+                                  </label>
+                              </div>
                           </div>
-                        </div>
-                        <div class="field">
-                          <div class="ui radio checkbox">
-                            <input type="radio" name="program" tabindex="0" class="hidden" id="ahar" value="Ahar">
-                            <label for="ahar">AHAR APURTI</label>
-                          </div>
-                        </div>
-                        <div class="field">
-                          <div class="ui radio checkbox">
-                            <input type="radio" name="program" tabindex="0" class="hidden" id="avsar" value="Avsar">
-                            <label for="avsar">AVSAR - a chance</label>
-                          </div>
-                        </div>
-                        <div class="field">
-                          <div class="ui radio checkbox">
-                            <input type="radio" name="program" tabindex="0" class="hidden" id="lakshya" value="Lakshya">
-                            <label for="lakshya">Lakshya</label>
-                          </div>
-                        </div>
-                        <div class="field">
-                          <div class="ui radio checkbox">
-                            <input type="radio" name="program" tabindex="0" class="hidden" id="parivartan" value="Parivartan">
-                            <label for="parivartan">PARIVARTAN - change of direction</label>
-                          </div>
-                        </div>
-                        <div class="field">
-                          <div class="ui radio checkbox">
-                            <input type="radio" name="program" tabindex="0" class="hidden" id="uphaar" value="Uphaar">
-                            <label for="uphaar">UPHAAR - gift a smile</label>
-                          </div>
-                        </div>
+                          <?php endforeach; ?>
+                        
                     </div>
 
                     <div class="field">
@@ -311,6 +386,9 @@ include '../application/config/conn.db.php'
 
 
                 </form>
+
+
+
 
                 <span class="p-20"></span>
             </div>
