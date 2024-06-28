@@ -1,3 +1,7 @@
+<?php
+include '../application/config/conn.db.php';
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -7,25 +11,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta content="" name="description">
     <meta content="" name="keywords">
-
-    <!-- Favicons -->
     <link href="assets/img/favicon.png" rel="icon">
     <link href="assets/img/apple-touch-icon.png" rel="apple-touch-icon">
-
-    <!-- Fonts -->
     <link href="https://fonts.googleapis.com" rel="preconnect">
     <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700;800&family=Montserrat:wght@100;200;300;400;500;600;700;800;900&family=Lato:wght@100;300;400;700;900&display=swap" rel="stylesheet">
-
-    <!-- Vendor CSS Files -->
     <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
     <link href="assets/vendor/glightbox/css/glightbox.min.css" rel="stylesheet">
     <link href="assets/vendor/swiper/swiper-bundle.min.css" rel="stylesheet">
     <link href="assets/vendor/aos/aos.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-    <!-- Template Main CSS File -->
     <link href="assets/css/main.css" rel="stylesheet">
     <style>
         body {
@@ -95,17 +91,13 @@
         .form-buttons button:hover {
             background-color: #0056b3;
         }
- 
-        .space{
+        .space {
             margin: 10px;
         }
-        .img{
+        .img {
             width: 500px;
             height: 400px;
         }
-
-
-
     </style>
 </head>
 
@@ -139,117 +131,151 @@
 
     <main id="main">
         <section id="about" class="bg-white"></section>
-   
-            <div class="container margin-top: 300px">
-                <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post" class="form">
-                    <h1>Sponsor This Child</h1>
-                    <div class="form-section">
-                        <h6>Child's Details</h6>
-                        <div class="child-details">
+        <div class="container margin-top: 300px">
+            
+            <?php
+            if (isset($_POST['submit'])) {
+                include '../application/config/conn.db.php'; // Ensure the connection is included
+
+                // Collect form data
+                $cid = $_GET['cid'];
+                $noofyear = $_POST['noofyear'];
+                $firstname = $_POST['firstname'];
+                $lastname = $_POST['lastname'];
+                $email = $_POST['email'];
+                $phone = $_POST['phone'];
+                $address = $_POST['address'];
+                $amount = $_POST['amount'];
+                $checkno = $_POST['checkno'];
+
+                // Prepare SQL statements
+                $sql = "INSERT INTO sponsorer (spn_firstname, spn_lastname, spnd_date, spn_noofyears, spn_email, spn_phone, spn_bill_address, spn_amount, spn_checkno, cid) 
+                        VALUES ('$firstname', '$lastname', NOW(), '$noofyear', '$email', '$phone', '$address', '$amount', '$checkno', '$cid')";
+                        
+                $sql2 = "UPDATE children SET sponsored=1 WHERE cid='$cid'";
+
+                // Execute SQL statements and check for errors
+                if ($conn->query($sql) === TRUE && $conn->query($sql2) === TRUE) {
+                    $unsponsored_page = './child gallery.php';
+                    echo "<script>
+                            alert('New record created successfully');
+                            window.location.href = '$unsponsored_page';
+                          </script>";
+                } else {
+                    echo "<script> alert('Error: " . $conn->error . "'); </script>";
+                }
+                $conn->close();
+            }
+            ?>
+
+            <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]) . '?cid=' . htmlspecialchars($_GET["cid"]); ?>" method="post" class="form">
+                <h1>Sponsor This Child</h1>
+                <div class="form-section">
+                    <h6>Child's Details</h6>
+                    <div class="child-details">
                         <img src="img/defaultimg.png" alt="Child Image" class="img">
-                            <div style="display: flex; align-items: center; justify-content: space-between  ; justify-content: start; padding: 10px; background-color: #f4f4f4; border: 1px solid #ddd; margin-top: 10px; font-family: 'Arial', sans-serif;">
-                                <?php
-                                // Database connection setup
-                                include '../application/config/conn.db.php';
+                        <div style="display: flex; align-items: center; justify-content: space-between  ; justify-content: start; padding: 10px; background-color: #f4f4f4; border: 1px solid #ddd; margin-top: 10px; font-family: 'Arial', sans-serif;">
 
-                                // Check if 'cid' is set in the GET request
-                                if (isset($_GET['cid']) && !empty($_GET['cid'])) {
-                                    $cid = htmlspecialchars($_GET['cid']);
-                                    $sql = "SELECT cid, cname, cdob, cyoe, cclass FROM children WHERE cid = ?";
 
-                                    // Prepare statement to avoid SQL injection
-                                    if ($stmt = $conn->prepare($sql)) {
-                                        $stmt->bind_param("i", $cid);
-                                        $stmt->execute();
-                                        $result = $stmt->get_result();
 
-                                        if ($result->num_rows > 0) {
-                                            while ($row = $result->fetch_assoc()) {
-                                                $dob = $row["cdob"];
-                                                $age = (date('Y') - date('Y', strtotime($dob)));
-                                                ?>
-                                                <div class="space">Name: <br><?php echo $row["cname"]; ?></br></div>
-                                                <div class="space">Age: <br><?php echo $age; ?></br></div>
-                                                <div class="space">Class: <br><?php echo $row["cclass"]; ?></strong></div>
-                                                <div class="space">Year of enrollment: <br><?php echo $row["cyoe"]; ?></br></div>
-                                                <?php
-                                            }
-                                        } else {
-                                            echo '<div class="ui error message">No child found with the provided ID.</div>';
+                            <?php
+                            include '../application/config/conn.db.php'; // Ensure the connection is included
+
+                            if (isset($_GET['cid']) && !empty($_GET['cid'])) {
+                                $cid = htmlspecialchars($_GET['cid']);
+                                $sql = "SELECT cid, cname, cdob, cyoe, cclass FROM children WHERE cid = ?";
+
+                                if ($stmt = $conn->prepare($sql)) {
+                                    $stmt->bind_param("i", $cid);
+                                    $stmt->execute();
+                                    $result = $stmt->get_result();
+
+                                    if ($result->num_rows > 0) {
+                                        while ($row = $result->fetch_assoc()) {
+                                            $dob = $row["cdob"];
+                                            $age = (date('Y') - date('Y', strtotime($dob)));
+                                            ?>
+                                            <div class="space">Name: <br><?php echo $row["cname"]; ?></br></div>
+                                            <div class="space">Age: <br><?php echo $age; ?></br></div>
+                                            <div class="space">Class: <br><?php echo $row["cclass"]; ?></br></div>
+                                            <div class="space">Year of enrollment: <br><?php echo $row["cyoe"]; ?></br></div>
+                                            <?php
                                         }
-                                        $stmt->close();
                                     } else {
-                                        echo '<div class="ui error message">Error preparing the database query.</div>';
+                                        echo '<div class="ui error message">No child found with the provided ID.</div>';
                                     }
+                                    $stmt->close();
                                 } else {
-                                    echo '<div class="ui error message">Child ID is not provided.</div>';
+                                    echo '<div class="ui error message">Error preparing the database query.</div>';
                                 }
-                                ?>
-                            </div>
+                            } else {
+                                echo '<div class="ui error message">Child ID is not provided.</div>';
+                            }
+                            ?>
                         </div>
                     </div>
+                </div>
 
-                    <div class="form-section">
-                        <h4>Sponsor Type</h4>
-                        <div class="field">
-                            <select name="noofyear" required>
-                                <option value="">Number of Years</option>
-                                <option value="1">1 Year</option>
-                                <option value="2">2 Years</option>
-                                <option value="3">3 Years</option>
-                                <option value="5">5 Years</option>
-                            </select>
-                        </div>
-                        <div>
-                            * 1 year, pay Rs.4800 or $112 USD <br>
-                            * 2 years, pay Rs.9600 or $224 USD <br>
-                            * 3 years, pay Rs.15000 or $335 USD <br>
-                            * 5 years, pay Rs.25000 or $581 USD <br>
-                        </div>
+                <div class="form-section">
+                    <h4>Sponsor Type</h4>
+                    <div class="field">
+                        <select name="noofyear" required>
+                            <option value="">Number of Years</option>
+                            <option value="1">1 Year</option>
+                            <option value="2">2 Years</option>
+                            <option value="3">3 Years</option>
+                            <option value="5">5 Years</option>
+                        </select>
                     </div>
+                    <div>
+                        * 1 year, pay Rs.4800 or $112 USD <br>
+                        * 2 years, pay Rs.9600 or $224 USD <br>
+                        * 3 years, pay Rs.15000 or $335 USD <br>
+                        * 5 years, pay Rs.25000 or $581 USD <br>
+                    </div>
+                </div>
 
-                    <div class="form-section">
-                        <h4>Personal Information</h4>
-                        <div class="field">
-                            <label for="firstname">First Name</label>
-                            <input type="text" id="firstname" name="firstname" placeholder="First Name" required>
-                        </div>
-                        <div class="field">
-                            <label for="lastname">Last Name</label>
-                            <input type="text" id="lastname" name="lastname" placeholder="Last Name">
-                        </div>
-                        <div class="field">
-                            <label for="email">Email</label>
-                            <input type="email" id="email" name="email" placeholder="Email Address" required>
-                        </div>
-                        <div class="field">
-                            <label for="phone">Phone No.</label>
-                            <input type="tel" id="phone" name="phone" placeholder="Phone / Mobile" required>
-                        </div>
-                        <div class="field">
-                            <label for="address">Billing Address</label>
-                            <input type="text" id="address" name="address" placeholder="Address" required>
-                        </div>
+                <div class="form-section">
+                    <h4>Personal Information</h4>
+                    <div class="field">
+                        <label for="firstname">First Name</label>
+                        <input type="text" id="firstname" name="firstname" placeholder="First Name" required>
                     </div>
+                    <div class="field">
+                        <label for="lastname">Last Name</label>
+                        <input type="text" id="lastname" name="lastname" placeholder="Last Name">
+                    </div>
+                    <div class="field">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" placeholder="Email Address" required>
+                    </div>
+                    <div class="field">
+                        <label for="phone">Phone No.</label>
+                        <input type="tel" id="phone" name="phone" placeholder="Phone / Mobile" required>
+                    </div>
+                    <div class="field">
+                        <label for="address">Billing Address</label>
+                        <input type="text" id="address" name="address" placeholder="Address" required>
+                    </div>
+                </div>
 
-                    <div class="form-section">
-                        <h4>Billing Information</h4>
-                        <div class="field">
-                            <label for="amount">Amount</label>
-                            <input type="number" id="amount" name="amount" min="1" placeholder="Amount" required>
-                        </div>
-                        <div class="field">
-                            <label for="checkno">Check / DD no.</label>
-                            <input type="text" id="checkno" name="checkno" required>
-                        </div>
+                <div class="form-section">
+                    <h4>Billing Information</h4>
+                    <div class="field">
+                        <label for="amount">Amount</label>
+                        <input type="number" id="amount" name="amount" min="1" placeholder="Amount" required>
                     </div>
+                    <div class="field">
+                        <label for="checkno">Check / DD no.</label>
+                        <input type="text" id="checkno" name="checkno" required>
+                    </div>
+                </div>
 
-                    <div class="form-buttons">
-                        <button name="submit" type="submit">Submit</button>
-                    </div>
-                </form>
-            </div>
-        </section>
+                <div class="form-buttons">
+                    <button name="submit" type="submit">Submit</button>
+                </div>
+            </form>
+        </div>
     </main>
 
     <footer id="footer" class="footer">
@@ -282,17 +308,14 @@
         </div>
     </footer>
 
-    <!-- Scroll Top Button -->
     <a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
 
-    <!-- Preloader -->
     <div id="preloader">
         <div></div>
         <div></div>
         <div></div>
     </div>
 
-    <!-- Vendor JS Files -->
     <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="assets/vendor/glightbox/js/glightbox.min.js"></script>
     <script src="assets/vendor/purecounter/purecounter_vanilla.js"></script>
@@ -300,8 +323,6 @@
     <script src="assets/vendor/isotope-layout/isotope.pkgd.min.js"></script>
     <script src="assets/vendor/swiper/swiper-bundle.min.js"></script>
     <script src="assets/vendor/aos/aos.js"></script>
-
-    <!-- Template Main JS File -->
     <script src="assets/js/main.js"></script>
 </body>
 
